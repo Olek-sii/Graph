@@ -3,15 +3,15 @@ using NUnit.Framework;
 
 namespace TestGraph
 {
-	[TestFixture]
-	public class TestGraph
+	[TestFixture(typeof(GraphVertexList))]
+	public class ListNUnitTests<TGraph> where TGraph : IGraph, new()
 	{
-		private IGraph _graph;
+		IGraph _graph = new TGraph();
 
 		[SetUp]
 		public void SetUp()
 		{
-			_graph = new GraphVertexList();
+			_graph.Clear();
 		}
 
 		[Test]

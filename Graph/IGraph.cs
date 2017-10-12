@@ -4,6 +4,8 @@ namespace Graph
 {
 	public interface IGraph : IEquatable<IGraph>
 	{
+		void Clear();
+
 		int VertexCount { get; }
 		int EdgeCount { get; }
 

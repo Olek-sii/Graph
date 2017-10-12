@@ -12,13 +12,17 @@ namespace Graph
 		{
 			IGraph graph = new GraphVertexList();
 
-			graph.AddVertex("qwerty");
-			graph.AddVertex("QWERTY");
-			graph.AddVertex("123456");
+			graph.AddVertex("1");
+			graph.AddVertex("2");
+			graph.AddVertex("3");
 
-			graph.AddEdge("qwerty", "1234536", 5);
-			graph.AddEdge("qwerty", "QWERTY", 7);
-			graph.AddEdge("QWERTY", "123456", 42);
+			graph.AddEdge("1", "2", 5);
+			graph.AddEdge("1", "3", 7);
+			graph.AddEdge("2", "3", 42);
+			graph.AddEdge("3", "1", 42);
+			graph.AddEdge("3", "1", 43);
+
+			graph.DelVertex("1");
 
 			graph.Print();
 

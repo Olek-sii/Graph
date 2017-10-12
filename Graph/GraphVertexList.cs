@@ -15,6 +15,7 @@ namespace Graph
 
 		public void Print()
 		{
+			Console.WriteLine("Vertices: {0}, Edges: {1}", VertexCount, EdgeCount);
 			foreach (var keyValuePair in _vertices)
 			{
 				Console.WriteLine(keyValuePair.Key.Data);
@@ -42,7 +43,12 @@ namespace Graph
 				vertexTo = _vertices.Keys.FirstOrDefault((x) => x.Data == to);
 			}
 
-			_vertices[vertexFrom].Add(vertexTo, new Edge(vertexFrom, vertexTo, w));
+
+			if (GetEdgeRef(from,to) == null)
+			{
+				Edge edge = new Edge(vertexFrom, vertexTo, w);
+				_vertices[vertexFrom].Add(vertexTo, edge);
+			}
 		}
 
 		public void AddVertex(string str)
@@ -53,27 +59,80 @@ namespace Graph
 
 		public int DelEdge(string v1, string v2)
 		{
-			throw new NotImplementedException();
+			Edge edge = GetEdgeRef(v1,v2);
+			if (edge == null)
+				throw new KeyNotFoundException();
+
+			int w = edge.W;
+			_vertices[edge.V1].Remove(edge.V2);
+			return w;
 		}
 
 		public void DelVertex(string str)
 		{
-			throw new NotImplementedException();
+			Vertex vertex = GetVertexRef(str);
+			if (vertex == null)
+				throw new KeyNotFoundException();
+
+			_vertices.Remove(vertex);
+			foreach (var item in _vertices)
+			{
+				item.Value.Remove(vertex);
+			}
+		}
+
+		private Edge GetEdgeRef(string v1, string v2)
+		{
+			Edge edge = null;
+			foreach (var pair in _vertices)
+			{
+				if (pair.Key.Data == v1)
+				{
+					foreach (var pair2 in pair.Value)
+					{
+						if (pair2.Key.Data == v2)
+							edge = pair2.Value;
+					}
+				}
+			}
+			return edge;
+		}
+
+		private Vertex GetVertexRef(string data)
+		{
+			Vertex vertex = null;
+			foreach (var item in _vertices)
+			{
+				if (item.Key.Data == data)
+					vertex = item.Key;
+			}
+			return vertex;
 		}
 
 		public int GetEdge(string v1, string v2)
 		{
-			throw new NotImplementedException();
+			Edge edge = GetEdgeRef(v1, v2);
+			if (edge == null)
+				throw new KeyNotFoundException();
+			return edge.W;
 		}
 
 		public void SetEdge(string v1, string v2, int w)
 		{
-			throw new NotImplementedException();
+			Edge edge = GetEdgeRef(v1, v2);
+			if (edge == null)
+				throw new KeyNotFoundException();
+			edge.W = w;
 		}
 
 		public bool Equals(IGraph other)
 		{
 			return VertexCount == other.VertexCount;
+		}
+
+		public void Clear()
+		{
+			_vertices.Clear();
 		}
 	}
 }
