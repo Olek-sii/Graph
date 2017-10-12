@@ -1,6 +1,7 @@
 /packages
 /TestResults
-TestGraph/bin
-TestGraph/obj
-Graph/bin
-Graph/obj
+/Graph/bin
+/Graph/obj
+/TestGraph/bin
+/TestGraph/obj
+/.vs
