@@ -5,6 +5,8 @@ using System.Collections.Generic;
 namespace TestGraph
 {
 	[TestFixture(typeof(GraphVertexList))]
+	[TestFixture(typeof(GraphMatrix))]
+	//[TestFixture(typeof(GraphEdgeList))]
 	public class ListNUnitTests<TGraph> where TGraph : IGraph, new()
 	{
 		IGraph _graph = new TGraph();
@@ -38,6 +40,8 @@ namespace TestGraph
 			{
 				_graph.AddVertex(i.ToString());
 			}
+			_graph.AddEdge("0", "3", 4);
+			_graph.AddEdge("3", "4", 5);
 			_graph.DelVertex("3");
 			Assert.AreEqual(4, _graph.VertexCount);
 			Assert.AreEqual(0, _graph.EdgeCount);

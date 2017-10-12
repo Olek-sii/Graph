@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Graph
 {
@@ -10,7 +6,7 @@ namespace Graph
 	{
 		static void Main(string[] args)
 		{
-			IGraph graph = new GraphVertexList();
+			IGraph graph = new GraphMatrix();
 
 			graph.AddVertex("1");
 			graph.AddVertex("2");
@@ -22,7 +18,7 @@ namespace Graph
 			graph.AddEdge("3", "1", 42);
 			graph.AddEdge("3", "1", 43);
 
-			graph.DelVertex("1");
+			//graph.DelVertex("1");
 
 			graph.Print();
 
