@@ -11,7 +11,22 @@ namespace Graph
 		private Dictionary<Vertex, Dictionary<Vertex, Edge>> _vertices = new Dictionary<Vertex, Dictionary<Vertex, Edge>>();
 
 		public int VertexCount => _vertices.Count;
-		public int EdgeCount => 0;
+		public int EdgeCount
+		{
+			get
+			{
+				int count = 0;
+				foreach (var item in _vertices)
+				{
+					foreach (var item2 in item.Value)
+					{
+						if (GetEdgeRef(item.Key.Data, item2.Key.Data) != null)
+							count++;
+					}
+				}
+				return count;
+			}
+		}
 
 		public void Print()
 		{
@@ -53,7 +68,7 @@ namespace Graph
 
 		public void AddVertex(string str)
 		{
-			if (_vertices.Keys.FirstOrDefault((x) => x.Data == str) == null)
+			if (GetVertexRef(str) == null)
 				_vertices.Add(new Vertex(str), new Dictionary<Vertex, Edge>());
 		}
 
@@ -123,11 +138,6 @@ namespace Graph
 			if (edge == null)
 				throw new KeyNotFoundException();
 			edge.W = w;
-		}
-
-		public bool Equals(IGraph other)
-		{
-			return VertexCount == other.VertexCount;
 		}
 
 		public void Clear()

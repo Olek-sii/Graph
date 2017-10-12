@@ -2,7 +2,7 @@
 
 namespace Graph
 {
-	public interface IGraph : IEquatable<IGraph>
+	public interface IGraph
 	{
 		void Clear();
 
