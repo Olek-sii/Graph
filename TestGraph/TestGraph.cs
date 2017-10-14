@@ -128,5 +128,149 @@ namespace TestGraph
 		{
 			Assert.Throws<KeyNotFoundException>(() => _graph.SetEdge("6", "7", 1));
 		}
+
+		[TestCase(0)]
+		[TestCase(1)]
+		[TestCase(2)]
+		[TestCase(5)]
+		public void TestGetInputEdgeCount(int n)
+		{
+			_graph.AddVertex("A");
+			for (int i = 0; i < 5; i++)
+			{
+				_graph.AddVertex(i.ToString());
+			}
+
+			for (int i = 0; i < n; i++)
+			{
+				_graph.AddEdge(i.ToString(), "A", i);
+			}
+
+			Assert.AreEqual(6, _graph.VertexCount);
+			Assert.AreEqual(n, _graph.GetInputEdgeCount("A"));
+		}
+
+		[Test]
+		public void TestGetInputEdgeCountEx()
+		{
+			Assert.Throws<KeyNotFoundException>(() => _graph.GetInputEdgeCount("A"));
+		}
+
+		[TestCase(0)]
+		[TestCase(1)]
+		[TestCase(2)]
+		[TestCase(5)]
+		public void TestGetOutputEdgeCount(int n)
+		{
+			_graph.AddVertex("A");
+			for (int i = 0; i < 5; i++)
+			{
+				_graph.AddVertex(i.ToString());
+			}
+
+			for (int i = 0; i < n; i++)
+			{
+				_graph.AddEdge("A", i.ToString(), i);
+			}
+
+			Assert.AreEqual(6, _graph.VertexCount);
+			Assert.AreEqual(n, _graph.GetOutputEdgeCount("A"));
+		}
+
+		[Test]
+		public void TestGetOutputEdgeCountEx()
+		{
+			Assert.Throws<KeyNotFoundException>(() => _graph.GetOutputEdgeCount("A"));
+		}
+
+		[TestCase(0)]
+		[TestCase(1)]
+		[TestCase(2)]
+		[TestCase(5)]
+		public void TestGetInputVertexNames(int n)
+		{
+			_graph.AddVertex("A");
+			for (int i = 0; i < 5; i++)
+			{
+				_graph.AddVertex(i.ToString());
+			}
+
+			for (int i = 0; i < n; i++)
+			{
+				_graph.AddEdge(i.ToString(), "A", i);
+			}
+
+			string[] expected = new string[n];
+			for (int i = 0; i < n; i++)
+			{
+				expected[i] = i.ToString();
+			}
+
+			Assert.AreEqual(6, _graph.VertexCount);
+			CollectionAssert.AreEqual(expected, _graph.GetInputVertexNames("A"));
+		}
+
+		[Test]
+		public void TestGetInputVertexNamesEx()
+		{
+			Assert.Throws<KeyNotFoundException>(() => _graph.GetInputVertexNames("A"));
+		}
+
+		[TestCase(0)]
+		[TestCase(1)]
+		[TestCase(2)]
+		[TestCase(5)]
+		public void TestGetOutputVertexNames(int n)
+		{
+			_graph.AddVertex("A");
+			for (int i = 0; i < 5; i++)
+			{
+				_graph.AddVertex(i.ToString());
+			}
+
+			for (int i = 0; i < n; i++)
+			{
+				_graph.AddEdge("A", i.ToString(), i);
+			}
+
+			string[] expected = new string[n];
+			for (int i = 0; i < n; i++)
+			{
+				expected[i] = i.ToString();
+			}
+
+			Assert.AreEqual(6, _graph.VertexCount);
+			CollectionAssert.AreEqual(expected, _graph.GetOutputVertexNames("A"));
+		}
+
+		[Test]
+		public void TestGetOutputVertexNamesEx()
+		{
+			Assert.Throws<KeyNotFoundException>(() => _graph.GetOutputVertexNames("A"));
+		}
+
+		[TestCase("1", "2", new string[] { "1", "2" })]
+		[TestCase("1", "3", new string[] { "1", "2", "3" })]
+		[TestCase("1", "5", new string[] { "1", "2", "3", "4", "5" })]
+		public void TestGetPath(string from, string to, string[] expected)
+		{
+			for (int i = 0; i < 5; i++)
+			{
+				_graph.AddVertex(i.ToString());
+			}
+
+			for (int i = 0; i < 4; i++)
+			{
+				_graph.AddEdge(i.ToString(), i.ToString() + 1, i);
+			}
+
+			CollectionAssert.AreEqual(expected, _graph.GetPath(from,to).ToArray());
+		}
+
+		[Test]
+		public void TestGetPathEx()
+		{
+			Assert.Throws<KeyNotFoundException>(() => _graph.GetPath("A", "B"));
+		}
 	}
 }

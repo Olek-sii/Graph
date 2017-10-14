@@ -6,7 +6,7 @@ namespace Graph
 	{
 		static void Main(string[] args)
 		{
-			IGraph graph = new GraphMatrix();
+			IGraph graph = new GraphVertexList();
 
 			graph.AddVertex("1");
 			graph.AddVertex("2");
@@ -18,7 +18,11 @@ namespace Graph
 			graph.AddEdge("3", "1", 42);
 			graph.AddEdge("3", "1", 43);
 
-			//graph.DelVertex("1");
+			graph.DelVertex("1");
+			graph.AddVertex("4");
+
+			graph.AddEdge("4", "2", 43);
+
 
 			graph.Print();
 

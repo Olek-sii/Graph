@@ -1,23 +1,55 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Graph
 {
 	public class GraphMatrix : IGraph
 	{
-		private Dictionary<Vertex, Dictionary<Vertex, Edge>> _matrix = new Dictionary<Vertex, Dictionary<Vertex, Edge>>();
+		private class Edge
+		{
+			Vertex _from;
+			Vertex _to;
+			int _w;
 
-		public int VertexCount => _matrix.Count;
+			public int W { get => _w; set => _w = value; }
+			public Vertex V1 { get => _from; }
+			public Vertex V2 { get => _to; }
+
+
+			public Edge(Vertex from, Vertex to, int w)
+			{
+				_from = from;
+				_to = to;
+				_w = w;
+			}
+		}
+
+		private class Vertex
+		{
+			public string Data { get; set; }
+
+			public Vertex(string data)
+			{
+				Data = data;
+			}
+		}
+
+		private static readonly int _Size = 25;
+		private List<Vertex> _vertices = new List<Vertex>();
+		private Edge[,] _matrix = new Edge[_Size, _Size];
+
+		public int VertexCount => _vertices.Count;
 		public int EdgeCount
 		{
 			get
 			{
 				int count = 0;
-				foreach (var item in _matrix)
+				for (int i = 0; i < _Size; i++)
 				{
-					foreach (var item2 in item.Value)
+					for (int j = 0; j < _Size; j++)
 					{
-						if (item2.Value != null)
+						if (_matrix[i, j] != null)
 							count++;
 					}
 				}
@@ -42,7 +74,7 @@ namespace Graph
 				vertex2 = GetVertexRef(v2);
 			}
 
-			_matrix[vertex1][vertex2] = new Edge(vertex1, vertex2, w);
+			_matrix[_vertices.IndexOf(vertex1), _vertices.IndexOf(vertex2)] = new Edge(vertex1, vertex2, w);
 		}
 
 		public void AddVertex(string str)
@@ -50,20 +82,13 @@ namespace Graph
 			if (GetVertexRef(str) != null)
 				return;
 
-			Vertex vertex = new Vertex(str);
-			Dictionary<Vertex, Edge> dictionary = new Dictionary<Vertex, Edge>();
-			foreach (var pair in _matrix)
-			{
-				pair.Value.Add(vertex, null);
-				dictionary.Add(pair.Key, null);
-			}
-			dictionary.Add(vertex, null);
-			_matrix.Add(vertex, dictionary);
+			_vertices.Add(new Vertex(str));
 		}
 
 		public void Clear()
 		{
-			_matrix.Clear();
+			_vertices.Clear();
+			_matrix = new Edge[_Size, _Size];
 		}
 
 		public int DelEdge(string v1, string v2)
@@ -74,8 +99,8 @@ namespace Graph
 			if (vertex1 == null || vertex2 == null)
 				throw new KeyNotFoundException();
 
-			int w = _matrix[vertex1][vertex2].W;
-			_matrix[vertex1][vertex2] = null;
+			int w = _matrix[_vertices.IndexOf(vertex1), _vertices.IndexOf(vertex2)].W;
+			_matrix[_vertices.IndexOf(vertex1), _vertices.IndexOf(vertex2)] = null;
 			return w;
 		}
 
@@ -86,11 +111,12 @@ namespace Graph
 			if (vertex == null)
 				throw new KeyNotFoundException();
 
-			_matrix.Remove(vertex);
-			foreach (var pair in _matrix)
+			for (int i = 0; i < _Size; i++)
 			{
-				pair.Value.Remove(vertex);
+				_matrix[_vertices.IndexOf(vertex), i] = null;
+				_matrix[i, _vertices.IndexOf(vertex)] = null;
 			}
+			_vertices.Remove(vertex);
 		}
 
 		public int GetEdge(string v1, string v2)
@@ -103,26 +129,21 @@ namespace Graph
 
 		public void Print()
 		{
-			Console.Write("     ");
-			foreach (var pair in _matrix)
+			Console.Write("   ");
+			for (int i = 0; i < _Size; i++)
 			{
-				Console.Write("{0, -4}|", pair.Key.Data);
-			}
-			Console.Write("\n     ");
-			foreach (var pair in _matrix)
-			{
-				Console.Write("-----");
+				Console.Write("{0, -2}|", i);
 			}
 			Console.WriteLine();
-			foreach (var pair in _matrix)
+			for (int i = 0; i < _Size; i++)
 			{
-				Console.Write("{0, -4}|", pair.Key.Data);
-				foreach (var pair2 in pair.Value)
+				Console.Write("{0, -2}|", i);
+				for (int j = 0; j < _Size; j++)
 				{
-					if (pair2.Value == null)
-						Console.Write("{0, -5}", " ");
+					if (_matrix[i, j] == null)
+						Console.Write("  |");
 					else
-						Console.Write("{0, -5}", pair2.Value.W);
+						Console.Write("{0, -2}|", _matrix[i, j].W);
 				}
 				Console.WriteLine();
 			}
@@ -145,18 +166,77 @@ namespace Graph
 			if (vertex1 == null || vertex2 == null)
 				return null;
 
-			return _matrix[vertex1][vertex2];
+			return _matrix[_vertices.IndexOf(vertex1), _vertices.IndexOf(vertex2)];
 		}
 
 		private Vertex GetVertexRef(string data)
 		{
-			Vertex vertex = null;
-			foreach (var item in _matrix)
+			return _vertices.FirstOrDefault((x) => x.Data == data);
+		}
+
+		public int GetInputEdgeCount(string v)
+		{
+			Vertex vertex = GetVertexRef(v);
+			if (vertex == null)
+				throw new KeyNotFoundException();
+
+			int count = 0;
+			for (int i = 0; i < _Size; i++)
 			{
-				if (item.Key.Data == data)
-					vertex = item.Key;
+				if (_matrix[i, _vertices.IndexOf(vertex)] != null)
+					count++;
 			}
-			return vertex;
+			return count;
+		}
+
+		public int GetOutputEdgeCount(string v)
+		{
+			Vertex vertex = GetVertexRef(v);
+			if (vertex == null)
+				throw new KeyNotFoundException();
+
+			int count = 0;
+			for (int i = 0; i < _Size; i++)
+			{
+				if (_matrix[_vertices.IndexOf(vertex), i] != null)
+					count++;
+			}
+			return count;
+		}
+
+		public List<string> GetInputVertexNames(string v)
+		{
+			Vertex vertex = GetVertexRef(v);
+			if (vertex == null)
+				throw new KeyNotFoundException();
+
+			List<string> result = new List<string>();
+			for (int i = 0; i < _Size; i++)
+			{
+				if (_matrix[i, _vertices.IndexOf(vertex)] != null)
+					result.Add(_matrix[i, _vertices.IndexOf(vertex)].V1.Data);
+			}
+			return result;
+		}
+
+		public List<string> GetOutputVertexNames(string v)
+		{
+			Vertex vertex = GetVertexRef(v);
+			if (vertex == null)
+				throw new KeyNotFoundException();
+
+			List<string> result = new List<string>();
+			for (int i = 0; i < _Size; i++)
+			{
+				if (_matrix[_vertices.IndexOf(vertex), i] != null)
+					result.Add(_matrix[_vertices.IndexOf(vertex), i].V2.Data);
+			}
+			return result;
+		}
+
+		public List<string> GetPath(string from, string to)
+		{
+			throw new NotImplementedException();
 		}
 	}
 }

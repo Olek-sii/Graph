@@ -6,68 +6,96 @@ namespace Graph
 {
 	public class GraphVertexList : IGraph
 	{
-		private Dictionary<Vertex, Dictionary<Vertex, Edge>> _vertices = new Dictionary<Vertex, Dictionary<Vertex, Edge>>();
+		private class Edge
+		{
+			Vertex _from;
+			Vertex _to;
+			int _w;
+
+			public int W { get => _w; set => _w = value; }
+			public Vertex V1 { get => _from; }
+			public Vertex V2 { get => _to; }
+
+
+			public Edge(Vertex from, Vertex to, int w)
+			{
+				_from = from;
+				_to = to;
+				_w = w;
+			}
+		}
+
+		private class Vertex
+		{
+			public string Data { get; set; }
+			public List<Edge> Edges = new List<Edge>();
+
+			public Vertex(string data)
+			{
+				Data = data;
+			}
+		}
+
+		private List<Vertex> _vertices = new List<Vertex>();
 
 		public int VertexCount => _vertices.Count;
 		public int EdgeCount
 		{
 			get
 			{
-				int count = 0;
-				foreach (var item in _vertices)
+				HashSet<Edge> visitedEdges = new HashSet<Edge>();
+				foreach (Vertex vertex in _vertices)
 				{
-					foreach (var item2 in item.Value)
+					foreach (Edge edge in vertex.Edges)
 					{
-						if (GetEdgeRef(item.Key.Data, item2.Key.Data) != null)
-							count++;
+						visitedEdges.Add(edge);
 					}
 				}
-				return count;
+				return visitedEdges.Count;
 			}
 		}
 
 		public void Print()
 		{
 			Console.WriteLine("Vertices: {0}, Edges: {1}", VertexCount, EdgeCount);
-			foreach (var keyValuePair in _vertices)
+			foreach (Vertex vertex in _vertices)
 			{
-				Console.WriteLine(keyValuePair.Key.Data);
-				foreach (var item in keyValuePair.Value)
+				Console.WriteLine(vertex.Data);
+				foreach (Edge edge in vertex.Edges)
 				{
-					Console.WriteLine("---> {0}: {1}", item.Key.Data, item.Value.W);
+					Console.WriteLine("---> {0}: {1}", edge.V2.Data, edge.W);
 				}
 			}
 		}
 
 		public void AddEdge(string from, string to, int w)
 		{
-			Vertex vertexFrom = _vertices.Keys.FirstOrDefault((x) => x.Data == from);
-			Vertex vertexTo = _vertices.Keys.FirstOrDefault((x) => x.Data == to);
+			Vertex vertexFrom = _vertices.FirstOrDefault((x) => x.Data == from);
+			Vertex vertexTo = _vertices.FirstOrDefault((x) => x.Data == to);
 
 			if (vertexFrom == null)
 			{
 				AddVertex(from);
-				vertexFrom = _vertices.Keys.First((x) => x.Data == from);
+				vertexFrom = _vertices.FirstOrDefault((x) => x.Data == from);
 			}
 
 			if (vertexTo == null)
 			{
 				AddVertex(to);
-				vertexTo = _vertices.Keys.FirstOrDefault((x) => x.Data == to);
+				vertexTo = _vertices.FirstOrDefault((x) => x.Data == to);
 			}
-
 
 			if (GetEdgeRef(from,to) == null)
 			{
 				Edge edge = new Edge(vertexFrom, vertexTo, w);
-				_vertices[vertexFrom].Add(vertexTo, edge);
+				vertexFrom.Edges.Add(edge);
 			}
 		}
 
 		public void AddVertex(string str)
 		{
 			if (GetVertexRef(str) == null)
-				_vertices.Add(new Vertex(str), new Dictionary<Vertex, Edge>());
+				_vertices.Add(new Vertex(str));
 		}
 
 		public int DelEdge(string v1, string v2)
@@ -77,7 +105,7 @@ namespace Graph
 				throw new KeyNotFoundException();
 
 			int w = edge.W;
-			_vertices[edge.V1].Remove(edge.V2);
+			edge.V1.Edges.Remove(edge);
 			return w;
 		}
 
@@ -88,38 +116,33 @@ namespace Graph
 				throw new KeyNotFoundException();
 
 			_vertices.Remove(vertex);
-			foreach (var item in _vertices)
+			foreach (Vertex v in _vertices)
 			{
-				item.Value.Remove(vertex);
+				v.Edges.RemoveAll((x) => x.V2 == vertex);
 			}
 		}
 
 		private Edge GetEdgeRef(string v1, string v2)
 		{
-			Edge edge = null;
-			foreach (var pair in _vertices)
+			Edge result = null;
+			Vertex from = GetVertexRef(v1);
+			Vertex to = GetVertexRef(v2);
+
+			if (from == null || to == null)
+				return null;
+
+			foreach (Edge edge in from.Edges)
 			{
-				if (pair.Key.Data == v1)
-				{
-					foreach (var pair2 in pair.Value)
-					{
-						if (pair2.Key.Data == v2)
-							edge = pair2.Value;
-					}
-				}
+				if (edge.V2 == to)
+					result = edge;
 			}
-			return edge;
+
+			return result;
 		}
 
 		private Vertex GetVertexRef(string data)
 		{
-			Vertex vertex = null;
-			foreach (var item in _vertices)
-			{
-				if (item.Key.Data == data)
-					vertex = item.Key;
-			}
-			return vertex;
+			return _vertices.FirstOrDefault((x) => x.Data == data);
 		}
 
 		public int GetEdge(string v1, string v2)
@@ -141,6 +164,61 @@ namespace Graph
 		public void Clear()
 		{
 			_vertices.Clear();
+		}
+
+		public int GetInputEdgeCount(string v)
+		{
+			Vertex vertex = GetVertexRef(v);
+			if (vertex == null)
+				throw new KeyNotFoundException();
+
+			int count = 0;
+			foreach (Vertex ver in _vertices)
+			{
+				count += ver.Edges.FindAll((x) => x.V2.Data == v).Count;
+			}
+			return count;
+		}
+
+		public int GetOutputEdgeCount(string v)
+		{
+			Vertex vertex = GetVertexRef(v);
+			if (vertex == null)
+				throw new KeyNotFoundException();
+
+			return vertex.Edges.Count;
+		}
+
+		public List<string> GetInputVertexNames(string v)
+		{
+			Vertex vertex = GetVertexRef(v);
+			if (vertex == null)
+				throw new KeyNotFoundException();
+
+			List<string> result = new List<string>();
+			foreach (Vertex ver in _vertices)
+			{
+				foreach (Edge edge in ver.Edges)
+				{
+					if (edge.V2.Data == v)
+						result.Add(edge.V1.Data);
+				}
+			}
+			return result;
+		}
+
+		public List<string> GetOutputVertexNames(string v)
+		{
+			Vertex vertex = GetVertexRef(v);
+			if (vertex == null)
+				throw new KeyNotFoundException();
+
+			List<string> result = new List<string>();
+			foreach (Edge edge in vertex.Edges)
+			{
+				result.Add(edge.V2.Data);
+			}
+			return result;
 		}
 	}
 }
